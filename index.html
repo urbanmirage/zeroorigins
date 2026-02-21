@@ -371,27 +371,48 @@
 
             return (
                 <div className="min-h-screen text-slate-900 font-sans">
-                    <header className="bg-blue-700 text-white p-4 shadow-lg sticky top-0 z-20">
-                        <div className="max-w-4xl mx-auto flex justify-between items-center">
-                            <div className="w-10 flex items-center">
-                                {!isOnline ? (
-                                    <Icon name="WifiOff" className="text-blue-300 opacity-80" />
-                                ) : isSyncing ? (
-                                    <div className="flex items-center text-blue-200">
-                                        <Icon name="RefreshCw" className="animate-spin-slow" size={20} />
-                                    </div>
-                                ) : (
-                                    <Icon name="Cloud" className="text-blue-300 opacity-80" title="Connected to Google Sheet" />
-                                )}
-                            </div>
-                            <h1 className="text-2xl font-bold tracking-widest text-center">ORIGIN</h1>
-                            <button onClick={() => setShowSettings(true)} className="p-2 hover:bg-blue-600 rounded-full transition-colors w-10 flex justify-center">
-                                <Icon name="Settings" size={24} />
-                            </button>
-                        </div>
-                    </header>
 
-                    <div className="bg-white shadow-sm border-b border-slate-200 sticky top-16 z-10">
+
+<header className="bg-blue-700 text-white p-4 shadow-lg sticky top-0 z-20">
+    <div className="max-w-4xl mx-auto flex justify-between items-center">
+
+        {/* LEFT STATUS ICON */}
+        <div className="w-10 flex items-center">
+            {!isOnline ? (
+                <Icon name="WifiOff" className="text-blue-300 opacity-80" />
+            ) : isSyncing ? (
+                <div className="flex items-center text-blue-200">
+                    <Icon name="RefreshCw" className="animate-spin-slow" size={20} />
+                </div>
+            ) : (
+                <Icon name="Cloud" className="text-blue-300 opacity-80" />
+            )}
+        </div>
+
+        {/* TITLE */}
+        <h1 className="text-2xl font-bold tracking-widest text-center">ORIGIN</h1>
+
+        {/* RIGHT ICON GROUP */}
+        <div className="flex items-center gap-1">
+            <a
+                href="https://urbanmirage.github.io/Zonemap/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 hover:bg-blue-600 rounded-full transition-colors w-10 flex justify-center"
+            >
+                <Icon name="Globe" size={24} />
+            </a>
+
+            <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 hover:bg-blue-600 rounded-full transition-colors w-10 flex justify-center"
+            >
+                <Icon name="Settings" size={24} />
+            </button>
+        </div>
+
+    </div>
+</header>               <div className="bg-white shadow-sm border-b border-slate-200 sticky top-16 z-10">
                         <div className="max-w-4xl mx-auto flex">
                             <TabButton active={activeTab === 'search'} onClick={() => setActiveTab('search')} icon="Search" label="Search" />
                             <TabButton active={activeTab === 'add'} onClick={() => setActiveTab('add')} icon="Plus" label={editData ? "Edit" : "Add"} />
