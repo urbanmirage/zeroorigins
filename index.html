@@ -652,7 +652,7 @@
                         </div>
 
                         {enableMap && isOnline && (
-                            <div className="h-[300px] border rounded-lg overflow-hidden bg-slate-100 animate-fade-in-down">
+                            <div className="h-[600px] border rounded-lg overflow-hidden bg-slate-100 animate-fade-in-down">
                                 <InteractiveMap settings={settings} initialLocation={formData.location} onLocationUpdate={(lat, lng, link) => setFormData(prev => ({ ...prev, location: link }))} />
                             </div>
                         )}
@@ -804,7 +804,7 @@
                                         <label className="block text-sm font-bold text-slate-700">Geofence Radius (km)</label>
                                         <input type="number" className="w-full p-2 border rounded" value={tempSettings.radiusKm} onChange={e => setTempSettings({...tempSettings, radiusKm: e.target.value})} />
                                     </div>
-                                    <div className="h-[250px] border rounded relative">
+                                    <div className="h-[400px] border rounded relative">
                                         <SettingsMap 
                                             centerLat={tempSettings.centerLat} 
                                             centerLng={tempSettings.centerLng} 
