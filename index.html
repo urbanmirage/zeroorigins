@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORIGIN - Address Record Manager (Cloud Connected)</title>
-    <!-- Tailwind CSS for styling -->
+    <title>BLOCK - Address Record Manager (Cloud Connected)</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React and ReactDOM -->
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX transformation in-browser -->
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Leaflet Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -39,6 +38,14 @@
         .sync-overlay {
             transition: opacity 0.3s ease-in-out, visibility 0.3s;
         }
+
+        /* Glitch effect for login error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -80,6 +87,52 @@
                 }
             }, [name, size, className]);
             return <span ref={containerRef} style={{ display: 'inline-flex', alignItems: 'center' }}></span>;
+        };
+
+        const LoginScreen = ({ onLogin }) => {
+            const [passcode, setPasscode] = useState('');
+            const [error, setError] = useState(false);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (passcode === 'kdmdmms') {
+                    onLogin();
+                } else {
+                    setError(true);
+                    setPasscode('');
+                    setTimeout(() => setError(false), 500);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-black flex flex-col items-center justify-center font-sans selection:bg-white selection:text-black">
+                    <div className="text-center space-y-10 animate-fade-in-down">
+                        <h1 
+                            className="text-white text-7xl md:text-[8rem] font-black tracking-wide" 
+                            style={{ textShadow: '0 0 30px rgba(255,255,255,0.25)' }}
+                        >
+                            BLOCK
+                        </h1>
+                        <form onSubmit={handleSubmit} className={`flex items-center justify-center space-x-3 transition-transform ${error ? 'animate-shake' : ''}`}>
+                            <input
+                                type="password"
+                                placeholder="passcode"
+                                value={passcode}
+                                onChange={(e) => setPasscode(e.target.value)}
+                                className={`bg-[#0f172a] border ${error ? 'border-red-600 text-red-500' : 'border-[#1e293b] text-white focus:border-[#334155]'} px-4 py-3 outline-none rounded-md w-64 text-base transition-colors placeholder-[#64748b]`}
+                                autoFocus
+                                spellCheck="false"
+                            />
+                            <button 
+                                type="submit" 
+                                className="bg-white text-black text-base font-black px-7 py-3 rounded-md hover:bg-gray-200 transition-colors select-none tracking-widest"
+                            >
+                                GO
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
         };
 
         const InteractiveMap = ({ settings, onLocationUpdate, initialLocation }) => {
@@ -163,6 +216,7 @@
         };
 
         const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [activeTab, setActiveTab] = useState('search');
             const [addresses, setAddresses] = useState([]);
             const [notification, setNotification] = useState(null);
@@ -187,11 +241,11 @@
             useEffect(() => {
                 const handleOnline = () => {
                     setIsOnline(true);
-                    showNotification('Connected to Cloud Sync', 'success');
+                    if (isAuthenticated) showNotification('Connected to Cloud Sync', 'success');
                 };
                 const handleOffline = () => {
                     setIsOnline(false);
-                    showNotification('Disconnected from Cloud', 'error');
+                    if (isAuthenticated) showNotification('Disconnected from Cloud', 'error');
                 };
 
                 window.addEventListener('online', handleOnline);
@@ -207,13 +261,13 @@
                     window.removeEventListener('online', handleOnline);
                     window.removeEventListener('offline', handleOffline);
                 };
-            }, []);
+            }, [isAuthenticated]);
 
             useEffect(() => {
-                if (GOOGLE_WEB_APP_URL && isOnline) {
+                if (GOOGLE_WEB_APP_URL && isOnline && isAuthenticated) {
                     syncAllFromCloud();
                 }
-            }, [isOnline]);
+            }, [isOnline, isAuthenticated]);
 
             const syncAllFromCloud = async () => {
                 setIsSyncing(true);
@@ -355,6 +409,10 @@
                 }
             };
 
+            if (!isAuthenticated) {
+                return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+            }
+
             return (
                 <div className="min-h-screen text-slate-900 font-sans relative">
                     {/* Sync Overlay - Blurs everything and shows animation */}
@@ -383,17 +441,24 @@
                                 <div className="flex items-center space-x-2">
                                     <div className={`flex items-center space-x-2 ${isOnline ? 'status-blur' : ''}`}>
                                         <Icon name={isOnline ? "Cloud" : "WifiOff"} size={22} className={isOnline ? "text-green-300" : "text-white"} />
-                                        <span className="text-xs font-bold uppercase tracking-wider">
+                                        <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline-block">
                                             {isOnline ? 'Connected' : 'Disconnected'}
                                         </span>
                                     </div>
                                 </div>
                                 
                                 {/* Center: Title */}
-                                <h1 className="text-2xl font-bold tracking-widest text-center flex-1">ORIGIN</h1>
+                                <h1 className="text-2xl font-black tracking-[0.1em] text-center flex-1">BLOCK</h1>
                                 
                                 {/* Right Side: Map & Settings */}
                                 <div className="flex justify-end items-center space-x-1">
+                                    <button 
+                                        onClick={() => setIsAuthenticated(false)}
+                                        className="p-2 hover:bg-white/10 rounded-full transition-colors w-10 h-10 flex justify-center items-center mr-1" 
+                                        title="Log Out"
+                                    >
+                                        <Icon name="LogOut" size={20} />
+                                    </button>
                                     <a 
                                         href="https://urbanmirage.github.io/Zonemap/" 
                                         target="_blank" 
