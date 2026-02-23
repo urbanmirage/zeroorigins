@@ -166,9 +166,9 @@
                     try {
                         let coordsStr = null;
                         if (initialLocation.includes('query=')) {
-                            coordsStr = initialLocation.split('query=')[1];
+                            coordsStr = initialLocation.split('query=')[1].split('&')[0];
                         } else if (initialLocation.includes('?q=')) {
-                            coordsStr = initialLocation.split('?q=')[1];
+                            coordsStr = initialLocation.split('?q=')[1].split('&')[0];
                         }
                         
                         if (coordsStr) {
@@ -186,8 +186,8 @@
                 map.setView([initialLat, initialLng], 16);
 
                 const update = (lat, lng) => {
-                    // Mobile friendly intent link for Google Maps
-                    const link = `https://maps.google.com/?q=${lat},${lng}`;
+                    // Mobile friendly intent link for Google Maps cross-platform
+                    const link = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                     onLocationUpdate(lat, lng, link);
                 };
 
@@ -694,15 +694,15 @@
                         
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase">Purok (1-50)</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase">Purok (1-200)</label>
                                 <select className="w-full p-2 border rounded" value={formData.purok} onChange={e => setFormData({...formData, purok: e.target.value})}>
-                                    {Array.from({length: 50}, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
+                                    {Array.from({length: 200}, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase">Group (1-50)</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase">Group (1-200)</label>
                                 <select className="w-full p-2 border rounded" value={formData.group} onChange={e => setFormData({...formData, group: e.target.value})}>
-                                    {Array.from({length: 50}, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
+                                    {Array.from({length: 200}, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -756,12 +756,21 @@
             const [filterPurok, setFilterPurok] = useState('All');
             const filteredData = filterPurok === 'All' ? data : data.filter(r => String(r.purok) === String(filterPurok));
 
-            // Helper to ensure links work robustly on mobile
+            // Upgraded helper using official Google Maps universal cross-platform Intent Links
             const getMobileReadyLink = (url) => {
                 if (!url) return '#';
-                if (url.includes('query=')) {
-                    const coords = url.split('query=')[1];
-                    return `https://maps.google.com/?q=${coords}`;
+                try {
+                    let coords = null;
+                    if (url.includes('query=')) {
+                        coords = url.split('query=')[1].split('&')[0];
+                    } else if (url.includes('?q=')) {
+                        coords = url.split('?q=')[1].split('&')[0];
+                    }
+                    if (coords) {
+                        return `https://www.google.com/maps/search/?api=1&query=${coords}`;
+                    }
+                } catch(e) {
+                    // Fallback to original url if parsing fails
                 }
                 return url;
             };
@@ -776,7 +785,7 @@
                             className="py-2 px-3 border border-slate-300 rounded-lg bg-white outline-none focus:border-blue-500 font-medium text-slate-700 shadow-sm cursor-pointer"
                         >
                             <option value="All">All Purok</option>
-                            {Array.from({length: 50}, (_, i) => i + 1).map(n => (
+                            {Array.from({length: 200}, (_, i) => i + 1).map(n => (
                                 <option key={`filter-${n}`} value={n}>Purok {n}</option>
                             ))}
                         </select>
