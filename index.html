@@ -56,6 +56,25 @@
 
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbycWgx-6B8N_2VfkVxFjS7oh0q-Vxm6BpS_paQ-yovz-14P7Fvg4zSVG7YWuUHZ3zGtIg/exec";
 
+        // Upgraded helper using official Google Maps universal cross-platform Intent Links
+        const getMobileReadyLink = (url) => {
+            if (!url) return '#';
+            try {
+                let coords = null;
+                if (url.includes('query=')) {
+                    coords = url.split('query=')[1].split('&')[0];
+                } else if (url.includes('?q=')) {
+                    coords = url.split('?q=')[1].split('&')[0];
+                }
+                if (coords) {
+                    return `https://www.google.com/maps/search/?api=1&query=${coords}`;
+                }
+            } catch(e) {
+                // Fallback to original url if parsing fails
+            }
+            return url;
+        };
+
         const Icon = ({ name, size = 18, className = "" }) => {
             const containerRef = useRef(null);
             useEffect(() => {
@@ -638,19 +657,33 @@
                             </div>
                             <div className="max-h-64 overflow-y-auto custom-scrollbar">
                                 {matches.slice(0, 15).map(m => (
-                                    <button 
+                                    <div 
                                         key={m.id} 
                                         onClick={() => { setQuery(m.address); setSelectedMatch(m); }} 
-                                        className="w-full text-left p-3 border-b border-slate-100 last:border-0 hover:bg-blue-50 focus:bg-blue-50 transition-colors flex justify-between items-center"
+                                        className="w-full text-left p-3 border-b border-slate-100 last:border-0 hover:bg-blue-50 focus:bg-blue-50 transition-colors flex justify-between items-center cursor-pointer"
                                     >
                                         <div className="flex-1 pr-4">
                                             <div className="font-bold text-slate-800">{m.address}</div>
                                             {m.notes && <div className="text-xs text-slate-500 truncate">{m.notes}</div>}
                                         </div>
-                                        <div className="text-sm font-mono font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-md whitespace-nowrap">
-                                            {m.purok}{m.purokDiv}-{m.group}{m.groupDiv}
+                                        <div className="flex items-center space-x-2">
+                                            {m.location && (
+                                                <a 
+                                                    href={getMobileReadyLink(m.location)} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors shadow-sm"
+                                                    title="Open in Maps"
+                                                >
+                                                    <Icon name="MapPin" size={16}/>
+                                                </a>
+                                            )}
+                                            <div className="text-sm font-mono font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-md whitespace-nowrap">
+                                                {m.purok}{m.purokDiv}-{m.group}{m.groupDiv}
+                                            </div>
                                         </div>
-                                    </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -755,25 +788,6 @@
         const DataTab = ({ data, onDelete, onEdit }) => {
             const [filterPurok, setFilterPurok] = useState('All');
             const filteredData = filterPurok === 'All' ? data : data.filter(r => String(r.purok) === String(filterPurok));
-
-            // Upgraded helper using official Google Maps universal cross-platform Intent Links
-            const getMobileReadyLink = (url) => {
-                if (!url) return '#';
-                try {
-                    let coords = null;
-                    if (url.includes('query=')) {
-                        coords = url.split('query=')[1].split('&')[0];
-                    } else if (url.includes('?q=')) {
-                        coords = url.split('?q=')[1].split('&')[0];
-                    }
-                    if (coords) {
-                        return `https://www.google.com/maps/search/?api=1&query=${coords}`;
-                    }
-                } catch(e) {
-                    // Fallback to original url if parsing fails
-                }
-                return url;
-            };
 
             return (
                 <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
